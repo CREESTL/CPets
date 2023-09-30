@@ -11,14 +11,14 @@
    When moving with the marker up, the tortoise does not draw any lines.
    The user should input a list of commands.
    Each one must be separated with a space.
-   
+
 
    Examples of commands sequences:
    #1 [Square]: 5 6 4 5 6 2 5 10 3 5 10 3 5 10 3 5 10 1 6 7
    #2 [Smile Face]: 5 8 4 5 8 3 2 5 1 1 4 5 3 4 2 5 1 1 3 5 2 3 5 4 2 1 5 1 3 5 1 2 5 5 1 3 5 1 4 5 1 2 1 6 7
-   // TODO 
-   #3 [Triangle]: 
-            
+   #3 [Triangle]:  5 8 4 5 11 2 1 5 1 3 5 1 2 1 4 5 1 3 5 1 2 1 4 5 1 3 5 1 3 2 5 6 1 3 5 1 3 5 1 2 1 4 5 1 3 5 1 2 1 6
+   7
+
 */
 
 #include <stdbool.h>
@@ -39,7 +39,6 @@ typedef enum
 
 void help(void);
 void read_commands(unsigned short[MAX_COMMANDS]);
-void print_commands(unsigned short[MAX_COMMANDS]);
 void execute_commands(unsigned short[MAX_COMMANDS], unsigned short[MAP_SIZE][MAP_SIZE]);
 void draw_map(unsigned short[MAP_SIZE][MAP_SIZE]);
 
@@ -51,7 +50,6 @@ int main(void)
     unsigned short map[MAP_SIZE][MAP_SIZE] = {0};
 
     read_commands(commands);
-    print_commands(commands);
     execute_commands(commands, map);
 
     return 0;
@@ -83,25 +81,11 @@ void read_commands(unsigned short commands[MAX_COMMANDS])
             exit(EXIT_FAILURE);
         }
         // Stop reading commands if it's the end of the sequence
-        if (i > 1 && commands[i] == 7 && commands[i - 1] != 5)
+        if ((i > 1 && commands[i] == 7 && commands[i - 1] != 5) || (i == 0 && commands[i] == 7))
         {
             return;
         }
     }
-}
-
-void print_commands(unsigned short commands[MAX_COMMANDS])
-{
-    puts("Commands are:");
-    for (unsigned int i = 0; i < MAX_COMMANDS; i++)
-    {
-        printf("%hu ", commands[i]);
-        if (commands[i] == 7)
-        {
-            return;
-        }
-    }
-    puts("");
 }
 
 void draw_map(unsigned short map[MAP_SIZE][MAP_SIZE])
