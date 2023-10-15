@@ -9,6 +9,7 @@
                 "-std=c11",
                 "-g",
                 "${file}",
+                "${fileDirname}/*/*.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
