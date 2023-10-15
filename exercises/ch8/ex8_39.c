@@ -9,8 +9,8 @@
 
 /*
 
-
-   How to encode spaces between words?
+    TODO iterate over all keys in hashmap to free them and 
+        then free the map itself
 
 */
 
@@ -20,15 +20,22 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "./hashmap_lib/map.h"
+
 // Max amount of characters in code (including spaces)
 #define CODE_LENGTH 5000
 
+
+// Fill Morse code dictionary with translations of each word (letter)
+void fill_dict(hashmap *, hashmap *);
 // Get user input of Morse code
 void get_morse_code(char *, int);
 // Translate Morse code words into English letters
-void morse_to_english(char *, int);
+void morse_to_english(char *, int, hashmap *);
 // Write Morse code word into array
-void read_morse_word(char *, int, const char *, const char *);
+void read_morse_word(char *, int, char *, const char *);
+// Translate Morse code word into English letter
+void translate_morse_to_eng(char *, hashmap *);
 // Translate English words into Morse code
 void english_to_morse(char *, int);
 // Check that user input a correct character
@@ -36,12 +43,98 @@ bool check_token(char *);
 
 int main(void)
 {
+    // Create dictionary to translate from Morse code word into English letters
+    hashmap *eng_to_morse_dict = hashmap_create();
+    hashmap *morse_to_eng_dict = hashmap_create();
+    fill_dict(eng_to_morse_dict, morse_to_eng_dict);
+
     char code[CODE_LENGTH];
     get_morse_code(code, CODE_LENGTH);
-    morse_to_english(code, CODE_LENGTH);
+    morse_to_english(code, CODE_LENGTH, morse_to_eng_dict);
 
     return 0;
 }
+
+void fill_dict(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
+{
+    
+    // English to Morse
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("A"), (uintptr_t)".-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("B"), (uintptr_t)"-...");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("C"), (uintptr_t)"-.-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("D"), (uintptr_t)"-..");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("E"), (uintptr_t)".");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("F"), (uintptr_t)"..-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("G"), (uintptr_t)"--.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("H"), (uintptr_t)"....");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("I"), (uintptr_t)"..");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("K"), (uintptr_t)".---");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("L"), (uintptr_t)".-..");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("M"), (uintptr_t)"--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("N"), (uintptr_t)"-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("O"), (uintptr_t)"---");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("P"), (uintptr_t)".--.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("Q"), (uintptr_t)"--.-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("R"), (uintptr_t)".-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("S"), (uintptr_t)"...");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("T"), (uintptr_t)"-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("U"), (uintptr_t)"..-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("V"), (uintptr_t)"...-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("W"), (uintptr_t)".--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("X"), (uintptr_t)"-..-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("Y"), (uintptr_t)"-.--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("Z"), (uintptr_t)"--..");
+
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("1"), (uintptr_t)".----");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("2"), (uintptr_t)"..---");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("3"), (uintptr_t)"...--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("4"), (uintptr_t)"....-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("5"), (uintptr_t)".....");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("6"), (uintptr_t)"-....");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("7"), (uintptr_t)"--...");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("8"), (uintptr_t)"---..");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("9"), (uintptr_t)"----.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("0"), (uintptr_t)"-----");
+
+    // Morse to English
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-"), (uintptr_t)"A");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-..."), (uintptr_t)"B");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.-."), (uintptr_t)"C");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.."), (uintptr_t)"D");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("."), (uintptr_t)"E");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("..-."), (uintptr_t)"F");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--."), (uintptr_t)"G");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("...."), (uintptr_t)"H");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".."), (uintptr_t)"I");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".---"), (uintptr_t)"K");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-.."), (uintptr_t)"L");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--"), (uintptr_t)"M");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-."), (uintptr_t)"N");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("---"), (uintptr_t)"O");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".--."), (uintptr_t)"P");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--.-"), (uintptr_t)"Q");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-."), (uintptr_t)"R");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("..."), (uintptr_t)"S");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-"), (uintptr_t)"T");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("..-"), (uintptr_t)"U");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("...-"), (uintptr_t)"V");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".--"), (uintptr_t)"W");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-..-"), (uintptr_t)"X");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.--"), (uintptr_t)"Y");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--.."), (uintptr_t)"Z");
+
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".----"), (uintptr_t)"1");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("..---"), (uintptr_t)"2");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("...--"), (uintptr_t)"3");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("....-"), (uintptr_t)"4");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("....."), (uintptr_t)"5");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-...."), (uintptr_t)"6");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--..."), (uintptr_t)"7");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("---.."), (uintptr_t)"8");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("----."), (uintptr_t)"9");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-----"), (uintptr_t)"0");
+}
+
 
 void get_morse_code(char *code, int size)
 {
@@ -62,7 +155,7 @@ void get_morse_code(char *code, int size)
 }
 
 
-void morse_to_english(char *code, int size)
+void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
 {
     // Pointer to one token
     char *token_ptr = strtok(code, " ");
@@ -97,8 +190,7 @@ void morse_to_english(char *code, int size)
                 int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
                 char word[word_size];
                 read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
-                puts("Final word is:");
-                printf("'%s'\n", word);
+                translate_morse_to_eng(word, morse_to_eng_dict);
 
                 // Place pointer to the start of current word
                 prev_word_ptr = token_ptr;
@@ -117,8 +209,7 @@ void morse_to_english(char *code, int size)
             int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
             char word[word_size];
             read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
-            puts("Final word is:");
-            printf("'%s'\n", word);
+            translate_morse_to_eng(word, morse_to_eng_dict);
         }
     }
 }
@@ -128,7 +219,7 @@ void english_to_morse(char *code, int size)
 {
 }
 
-void read_morse_word(char *word, int word_size, const char *prev_word_ptr, const char *next_char_ptr)
+void read_morse_word(char *word, int word_size, char *prev_word_ptr, const char *next_char_ptr)
 {
     unsigned int count = 0;
     for (char *letter_ptr = prev_word_ptr; letter_ptr < next_char_ptr; letter_ptr++)
@@ -140,6 +231,19 @@ void read_morse_word(char *word, int word_size, const char *prev_word_ptr, const
         }
     }
     word[count] = '\0';
+}
+
+void translate_morse_to_eng(char *word, hashmap *morse_to_eng_dict)
+{
+    uintptr_t result;
+    if (hashmap_get(morse_to_eng_dict, word, strlen(word), &result))
+    {
+        printf("Word %s translates to letter '%s'\n", word, (char *)result);
+    }
+    else 
+    {
+        printf("Unable to find word '%s' in the dictionary", word);
+    }
 }
 
 bool check_token(char *token)
