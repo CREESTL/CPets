@@ -27,6 +27,8 @@
 void get_morse_code(char *, int);
 // Translate Morse code words into English letters
 void morse_to_english(char *, int);
+// Write Morse code word into array
+void read_morse_word(char *, int, const char *, const char *);
 // Translate English words into Morse code
 void english_to_morse(char *, int);
 // Check that user input a correct character
@@ -62,14 +64,14 @@ void get_morse_code(char *code, int size)
 
 void morse_to_english(char *code, int size)
 {
-    // Split code into words separated with 3 spaces
+    // Pointer to one token
     char *token_ptr = strtok(code, " ");
     // Pointer to the start of the previous word (not token!)
     // Initially it's the same as current token
     char *prev_word_ptr = token_ptr;
     while (token_ptr != NULL)
     {
-        // Only one character between spaces is allowed
+        // Check that token is valid
         if (!check_token(token_ptr))
         {
             puts("Invalid token");
@@ -77,39 +79,31 @@ void morse_to_english(char *code, int size)
         }
 
         // Pointer to the character following the current token
-        char *next_token_ptr = token_ptr + 1;
+        char *next_char_ptr = token_ptr + 1;
 
+        // Find next token
         token_ptr = strtok(NULL, " ");
 
         if (token_ptr != NULL)
         {
-            // Check that symbol is either a dot or a dash
             // If difference in pointers is 3 bytes, that means
             // there was 3 spaces between them
             // These tokens are different words
-            if (token_ptr - next_token_ptr == 3)
+            if (token_ptr - next_char_ptr == 3)
             {
-                // It should not contain any spaces ( / 2 + 1)
+                // Copy previous word into array
+                // It should not contain any spaces (2 + 1)
                 // It should contain '\0' symbol (+ 1)
-                char word[(next_token_ptr - prev_word_ptr) / 2 + 1 + 1];
-                unsigned int count = 0;
-                for (char *letter_ptr = prev_word_ptr; letter_ptr < next_token_ptr; letter_ptr++)
-                {
-                    if (*letter_ptr == '.' || *letter_ptr == '-')
-                    {
-                        puts("add a new letter");
-                        word[count] = *letter_ptr;
-                        count++;
-                    }
-                }
-                word[count] = '\0';
+                int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
+                char word[word_size];
+                read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
                 puts("Final word is:");
                 printf("'%s'\n", word);
 
-                // Place pointer wo the start of current word
+                // Place pointer to the start of current word
                 prev_word_ptr = token_ptr;
             }
-            else if (token_ptr - next_token_ptr != 1)
+            else if (token_ptr - next_char_ptr != 1)
             {
                 // If difference in pointers is neither 1 nor 3 bytes, that means
                 // there was an error in number of spaces. Throw.
@@ -120,12 +114,11 @@ void morse_to_english(char *code, int size)
         // End of input was reached. Print last word.
         else 
         {
-            puts("Word is:");
-            for (char *letter_ptr = prev_word_ptr; letter_ptr < next_token_ptr; letter_ptr++)
-            {
-                printf("%s", letter_ptr);
-            }
-            puts("");
+            int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
+            char word[word_size];
+            read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
+            puts("Final word is:");
+            printf("'%s'\n", word);
         }
     }
 }
@@ -135,6 +128,19 @@ void english_to_morse(char *code, int size)
 {
 }
 
+void read_morse_word(char *word, int word_size, const char *prev_word_ptr, const char *next_char_ptr)
+{
+    unsigned int count = 0;
+    for (char *letter_ptr = prev_word_ptr; letter_ptr < next_char_ptr; letter_ptr++)
+    {
+        if (*letter_ptr == '.' || *letter_ptr == '-')
+        {
+            word[count] = *letter_ptr;
+            count++;
+        }
+    }
+    word[count] = '\0';
+}
 
 bool check_token(char *token)
 {
