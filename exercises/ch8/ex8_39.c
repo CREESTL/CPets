@@ -145,6 +145,7 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
     // Pointer to the start of the previous word (not token!)
     // Initially it's the same as current token
     char *prev_word_ptr = token_ptr;
+    puts("Result in English:");
     while (token_ptr != NULL)
     {
         // Check that token is valid
@@ -195,6 +196,7 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
             morse_word_to_eng_letter(word, morse_to_eng_dict);
         }
     }
+    puts("");
 }
 
 bool check_token(char *token)
@@ -230,7 +232,7 @@ void morse_word_to_eng_letter(char *word, hashmap *morse_to_eng_dict)
     uintptr_t result;
     if (hashmap_get(morse_to_eng_dict, word, strlen(word), &result))
     {
-        printf("Word %s translates to letter '%s'\n", word, (char *)result);
+        printf("%s", (char *)result);
     }
     else
     {
@@ -265,6 +267,7 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
     // Pointer to the start of the previous word (not token!)
     // Initially it's the same as current token
     char *prev_word_ptr = word_ptr;
+    puts("Result in Morse:");
     while (word_ptr != NULL)
     {
         
@@ -316,7 +319,6 @@ void read_english_word(char *word, int word_size, char *prev_word_ptr, const cha
 
 void eng_word_to_morse_words(char *word, hashmap *eng_to_morse_dict)
 {
-    printf("Word %s translates into: ", word);
     // Translate each letter of the word
     for (unsigned int i = 0; i < strlen(word); i++)
     {
@@ -472,9 +474,6 @@ void clean_string(char *str, FILE *f)
 {
     if (!truncate_newline(str))
     {
-        puts("Newline has NOT been truncated");
         remove_remaining_chars(f);
-    } else {
-    puts("Newline has been truncated");
-    }
+    } 
 }
