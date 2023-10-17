@@ -8,8 +8,6 @@
 */
 
 /*
-    TODO use lowercase and uppercase
-
     TODO encode space between words with '/'
     
     TODO test output of English->Morse on Morse->English.
@@ -31,6 +29,9 @@
 #define CODE_LENGTH 5000
 // Max amount of characters in English  text
 #define TEXT_LENGTH 5000
+// Max amount of characters for user choice
+// 1 char for option, 1 char for '\0' symbol
+#define CHOICE_LENGTH 2
 
 // Get user input of Morse code
 void get_morse_code(char *, int);
@@ -57,6 +58,14 @@ void fill_dicts(hashmap *, hashmap *);
 // Free memory allocated for both dicts
 void free_dicts(hashmap *, hashmap *);
 
+// Remove remaining characters from keyboard input buffer until next newline
+void remove_remaining_chars(FILE *f);
+// Find and remove newline from string
+int truncate_newline(char *str);
+// Remove newline from string or excess cahracters from input buffer
+void clean_string(char *str, FILE *f);
+
+
 int main(void)
 {
     // Create dictionary to translate from Morse code word into English letters
@@ -66,23 +75,27 @@ int main(void)
     fill_dicts(eng_to_morse_dict, morse_to_eng_dict);
 
     // User can choose one option:
-    char choice;
+    // An option number with a '\0\' and '\n' symbol
+    char choice[CHOICE_LENGTH];
     printf("%s\n", "Choose one option \
             \n1)Translate Morse into English\
             \n2)Translate English into Morse\
     ");
 
-    // TODO if hit enter after input the fgets reads trash
-    // workd only if input 1 or 2 and hit ctrl+d
-    // how to close stdin after reading 1 char without EOL?
-    choice = getchar();
-    if (choice != '1' && choice != '2')
+    if (fgets(choice, CHOICE_LENGTH, stdin) == NULL)
+    {
+        puts("Failed to read input!");
+        exit(EXIT_FAILURE);
+    }
+    clean_string(choice, stdin);
+
+    if (choice[0] != '1' && choice[0] != '2')
     {
         puts("Invalid option");
         exit(EXIT_FAILURE);
     }
 
-    switch (choice)
+    switch (choice[0])
     {
     // Morse -> English
     case '1':
@@ -121,11 +134,7 @@ void get_morse_code(char *code, int size)
         puts("Failed to read input!");
         exit(EXIT_FAILURE);
     }
-    // Delete any control symbols at the end
-    if (iscntrl(code[strlen(code) - 1]))
-    {
-        memset(&code[strlen(code) - 1], '\0', 1);
-    }
+    clean_string(code, stdin);
     printf("Morse code is: %s\n", code);
 }
 
@@ -245,11 +254,7 @@ void get_english_text(char *text, int size)
         puts("Failed to read input!");
         exit(EXIT_FAILURE);
     }
-    // Delete any control symbols at the end
-    if (iscntrl(text[strlen(text) - 1]))
-    {
-        memset(&text[strlen(text) - 1], '\0', 1);
-    }
+    clean_string(text, stdin);
     printf("English text is: %s\n", text);
 }
 
@@ -431,4 +436,45 @@ void free_dicts(hashmap *morse_to_eng_dict, hashmap *eng_to_morse_dict)
 {
     free(morse_to_eng_dict);
     free(eng_to_morse_dict);
+}
+
+/*
+//////////////////////////
+////////GENERAL////////
+//////////////////////////
+*/
+
+void remove_remaining_chars(FILE *f)
+{
+    int c;
+    // Read characters from input and do nothing
+    while ((c = fgetc(f)) != EOF && c!= '\n')
+    { }
+}
+
+int truncate_newline(char *str)
+{
+    int res = 0;
+    if (str != NULL)
+    {
+        char *new_line_ptr = strchr(str, '\n');
+        if (new_line_ptr != NULL)
+        {
+            res = 1;
+            *new_line_ptr = '\0';
+        }
+    }
+    return res;
+    
+}
+
+void clean_string(char *str, FILE *f)
+{
+    if (!truncate_newline(str))
+    {
+        puts("Newline has NOT been truncated");
+        remove_remaining_chars(f);
+    } else {
+    puts("Newline has been truncated");
+    }
 }
