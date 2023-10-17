@@ -9,9 +9,6 @@
 
 /*
 
-    TODO iterate over all keys in hashmap to free them and
-        then free the map itself
-
     TODO encode space between words or write them all together?
 
     TODO test output of English->Morse on Morse->English.
@@ -53,7 +50,9 @@ void read_english_word(char *, int, char *, const char *);
 void eng_word_to_morse_words(char *, hashmap *);
 
 // Fill Morse code dictionary with translations of each word (letter)
-void fill_dict(hashmap *, hashmap *);
+void fill_dicts(hashmap *, hashmap *);
+// Free memory allocated for both dicts
+void free_dicts(hashmap *, hashmap *);
 
 int main(void)
 {
@@ -61,7 +60,7 @@ int main(void)
     // and vice versa
     hashmap *eng_to_morse_dict = hashmap_create();
     hashmap *morse_to_eng_dict = hashmap_create();
-    fill_dict(eng_to_morse_dict, morse_to_eng_dict);
+    fill_dicts(eng_to_morse_dict, morse_to_eng_dict);
 
     // User can choose one option:
     char choice;
@@ -96,6 +95,9 @@ int main(void)
         english_to_morse(text, TEXT_LENGTH, eng_to_morse_dict);
         break;
     }
+
+    // Clean up
+    free_dicts(morse_to_eng_dict, eng_to_morse_dict);
 
     return 0;
 }
@@ -336,7 +338,7 @@ void eng_word_to_morse_words(char *word, hashmap *eng_to_morse_dict)
 //////////////////////////
 */
 
-void fill_dict(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
+void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
 {
 
     // English to Morse
@@ -416,4 +418,10 @@ void fill_dict(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("---.."), (uintptr_t) "8");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("----."), (uintptr_t) "9");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("-----"), (uintptr_t) "0");
+}
+
+void free_dicts(hashmap *morse_to_eng_dict, hashmap *eng_to_morse_dict)
+{
+    free(morse_to_eng_dict);
+    free(eng_to_morse_dict);
 }
