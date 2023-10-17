@@ -8,11 +8,14 @@
 */
 
 /*
+    TODO use lowercase and uppercase
 
-    TODO encode space between words or write them all together?
-
+    TODO encode space between words with '/'
+    
     TODO test output of English->Morse on Morse->English.
     English should match
+    
+    TODO add punctuation to the dicts
 
 */
 
@@ -235,7 +238,6 @@ void morse_word_to_eng_letter(char *word, hashmap *morse_to_eng_dict)
 void get_english_text(char *text, int size)
 {
     puts("Input English text.\
-        \nUse only uppercase letters\
         \nDo not use spaces between words\
         ");
     if (fgets(text, size, stdin) == NULL)
@@ -260,6 +262,7 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
     char *prev_word_ptr = word_ptr;
     while (word_ptr != NULL)
     {
+        
         // Pointer to the character following the word
         char *next_char_ptr = word_ptr + strlen(word_ptr) + 1;
 
@@ -314,6 +317,10 @@ void eng_word_to_morse_words(char *word, hashmap *eng_to_morse_dict)
     {
         uintptr_t result;
         char letter = word[i];
+
+        // Convert letter to uppercase in any case
+        letter = toupper(letter);
+
         if (hashmap_get(eng_to_morse_dict, &letter, 1, &result))
         {
             for (unsigned int j = 0; j < strlen((char *)result); j++)
