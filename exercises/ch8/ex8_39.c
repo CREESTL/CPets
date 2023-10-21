@@ -8,7 +8,6 @@
 */
 
 /*
-    TODO encode space between words with '/'
     
     TODO test output of English->Morse on Morse->English.
     English should match
@@ -128,7 +127,8 @@ void get_morse_code(char *code, int size)
 {
     puts("Input Morse code.\
         \nUse 1 space between dots and dashes.\
-        \nUse 3 spaces between letters.\n");
+        \nUse 3 spaces between letters. \
+        \nUse '\\' between words.\n");
     if (fgets(code, size, stdin) == NULL)
     {
         puts("Failed to read input!");
@@ -145,6 +145,7 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
     // Initially it's the same as current token
     char *prev_word_ptr = token_ptr;
     puts("Result in English:");
+    printf("'");
     while (token_ptr != NULL)
     {
         // Check that token is valid
@@ -170,8 +171,8 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
             {
                 // Copy previous word into array
                 // It should not contain any spaces (2 + 1)
-                // It should contain '\0' symbol (+ 1)
-                int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
+                // It should contain '\0' symbol
+                int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1;
                 char word[word_size];
                 read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
                 morse_word_to_eng_letter(word, morse_to_eng_dict);
@@ -190,12 +191,13 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
         // End of input was reached. Print last word.
         else
         {
-            int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1 + 1;
+            int word_size = (next_char_ptr - prev_word_ptr) / 2 + 1;
             char word[word_size];
             read_morse_word(word, word_size, prev_word_ptr, next_char_ptr);
             morse_word_to_eng_letter(word, morse_to_eng_dict);
         }
     }
+    printf("'");
     puts("");
 }
 
@@ -248,9 +250,7 @@ void morse_word_to_eng_letter(char *word, hashmap *morse_to_eng_dict)
 
 void get_english_text(char *text, int size)
 {
-    puts("Input English text.\
-        \nDo not use spaces between words.\
-        \n");
+    puts("Input English text.\n");
     if (fgets(text, size, stdin) == NULL)
     {
         puts("Failed to read input!");
@@ -263,20 +263,17 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
 {
     // Pointer to one word
     char *word_ptr = strtok(text, " ");
-    printf("First word is: %s\n", word_ptr);
-    // Pointer to the start of the previous word (not token!)
-    // Initially it's the same as current token
-    char *prev_word_ptr = word_ptr;
     puts("Result in Morse:");
     while (word_ptr != NULL)
     {
+        // Pointer to the start of the previous word (not token!)
+        char *prev_word_ptr = word_ptr;
         
         // Pointer to the character following the word
-        char *next_char_ptr = word_ptr + strlen(word_ptr) + 1;
+        char *next_char_ptr = word_ptr + strlen(word_ptr);
 
         // Find next word
         word_ptr = strtok(NULL, " ");
-        printf("Following word is: %s\n", word_ptr);
 
         if (word_ptr != NULL)
         {
@@ -284,9 +281,6 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
             // there was 1 space between them. These are separate words
             if (word_ptr - next_char_ptr == 1)
             {
-                puts("ONE");
-                // Translate space as well
-                eng_word_to_morse_words(" ", eng_to_morse_dict);
                 
                 // Copy previous word into array
                 // It should contain '\0' symbol (+ 1)
@@ -295,8 +289,9 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
                 read_english_word(word, word_size, prev_word_ptr, next_char_ptr);
                 eng_word_to_morse_words(word, eng_to_morse_dict);
 
-                // Place pointer to the start of current word
-                prev_word_ptr = word_ptr;
+                // Translate space as well
+                eng_word_to_morse_words(" ", eng_to_morse_dict);
+
             }
             else if (word_ptr - next_char_ptr > 1)
             {
@@ -307,16 +302,15 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
             }
         }
         // End of input was reached. Print last word.
-        // TODO it all words are together, this is all one last word
         else
         {
-            puts("TWO");
             int word_size = (next_char_ptr - prev_word_ptr) + 1;
             char word[word_size];
             read_english_word(word, word_size, prev_word_ptr, next_char_ptr);
             eng_word_to_morse_words(word, eng_to_morse_dict);
         }
     }
+    puts(" ");
 }
 
 void read_english_word(char *word, int word_size, char *prev_word_ptr, const char *next_char_ptr)
@@ -348,15 +342,14 @@ void eng_word_to_morse_words(char *word, hashmap *eng_to_morse_dict)
                 // Place 1 space between each token of result
                 printf("%c ", ((char *)result)[j]);
             }
-            // Place 3 spaces between letters
-            printf("   ");
+            // Place 2 spaces between letters (one is after last char)
+            printf("  ");
         }
         else
         {
             printf("Unable to find letter '%c' in the dictionary", letter);
         }
     }
-    puts("");
 }
 
 /*
