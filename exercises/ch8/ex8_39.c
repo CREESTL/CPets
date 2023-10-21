@@ -2,8 +2,6 @@
 
     - Translate from English to Morse code
     - Translate from Morse code to English
-    - Use 1 space between Morse code symbols
-    - Use 3 spaces between Morse code words
 
 */
 
@@ -52,10 +50,10 @@ void free_dicts(hashmap *, hashmap *);
 void remove_remaining_chars(FILE *f);
 // Find and remove newline from string
 int truncate_newline(char *str);
-// Remove newline from string or excess cahracters from input buffer
+// Remove newline from string or excess characters from input buffer
 void clean_string(char *str, FILE *f);
 
-// Shows allowed English symbols
+// Show supported English symbols
 void show_dict(hashmap *);
 
 int main(void)
@@ -191,8 +189,7 @@ void morse_to_english(char *code, int size, hashmap *morse_to_eng_dict)
             morse_word_to_eng_letter(word, morse_to_eng_dict);
         }
     }
-    printf("'");
-    puts("");
+    puts("'");
 }
 
 bool check_token(char *token)
@@ -515,13 +512,12 @@ void clean_string(char *str, FILE *f)
 
 void print_symbol(void *key, size_t ksize, uintptr_t value, void *user)
 {
-   printf("%s", (char *)key);
+    printf("%s", (char *)key);
 }
 
 void show_dict(hashmap *eng_to_morse_dict)
 {
-    puts("Allowed English symbols are:"); 
+    puts("Supported English symbols are:");
     hashmap_iterate(eng_to_morse_dict, print_symbol, NULL);
     puts("");
-
 }
