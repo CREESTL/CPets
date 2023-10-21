@@ -7,15 +7,6 @@
 
 */
 
-/*
-    
-    TODO test output of English->Morse on Morse->English.
-    English should match
-    
-    TODO add punctuation to the dicts
-
-*/
-
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -64,6 +55,8 @@ int truncate_newline(char *str);
 // Remove newline from string or excess cahracters from input buffer
 void clean_string(char *str, FILE *f);
 
+// Shows allowed English symbols
+void show_dict(hashmap *);
 
 int main(void)
 {
@@ -106,6 +99,7 @@ int main(void)
     // English -> Morse
     case '2':
         char text[TEXT_LENGTH];
+        show_dict(eng_to_morse_dict);
         get_english_text(text, TEXT_LENGTH);
         english_to_morse(text, TEXT_LENGTH, eng_to_morse_dict);
         break;
@@ -268,7 +262,7 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
     {
         // Pointer to the start of the previous word (not token!)
         char *prev_word_ptr = word_ptr;
-        
+
         // Pointer to the character following the word
         char *next_char_ptr = word_ptr + strlen(word_ptr);
 
@@ -281,7 +275,7 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
             // there was 1 space between them. These are separate words
             if (word_ptr - next_char_ptr == 1)
             {
-                
+
                 // Copy previous word into array
                 // It should contain '\0' symbol (+ 1)
                 int word_size = (next_char_ptr - prev_word_ptr) + 1;
@@ -291,7 +285,6 @@ void english_to_morse(char *text, int size, hashmap *eng_to_morse_dict)
 
                 // Translate space as well
                 eng_word_to_morse_words(" ", eng_to_morse_dict);
-
             }
             else if (word_ptr - next_char_ptr > 1)
             {
@@ -361,7 +354,9 @@ void eng_word_to_morse_words(char *word, hashmap *eng_to_morse_dict)
 void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
 {
 
-    // English to Morse
+    // [English to Morse]
+
+    // Letters
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("A"), (uintptr_t) ".-");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("B"), (uintptr_t) "-...");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("C"), (uintptr_t) "-.-.");
@@ -389,6 +384,7 @@ void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("Y"), (uintptr_t) "-.--");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("Z"), (uintptr_t) "--..");
 
+    // Digits
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("1"), (uintptr_t) ".----");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("2"), (uintptr_t) "..---");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("3"), (uintptr_t) "...--");
@@ -399,11 +395,25 @@ void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("8"), (uintptr_t) "---..");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("9"), (uintptr_t) "----.");
     hashmap_set(eng_to_morse_dict, hashmap_str_lit("0"), (uintptr_t) "-----");
-    
-    // Special symbol for space
-    hashmap_set(eng_to_morse_dict, hashmap_str_lit(" "), (uintptr_t) "/");
 
-    // Morse to English
+    // Punctuation
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit(" "), (uintptr_t) "/");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("."), (uintptr_t) ".-.-.-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("'"), (uintptr_t) ".----.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("("), (uintptr_t) "-.--.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit(")"), (uintptr_t) "-.--.-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit(":"), (uintptr_t) "---...");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("+"), (uintptr_t) ".-.-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit(","), (uintptr_t) "--..--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("!"), (uintptr_t) "-.-.--");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit(";"), (uintptr_t) "-.-.-.");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("-"), (uintptr_t) "-....-");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("?"), (uintptr_t) "..--..");
+    hashmap_set(eng_to_morse_dict, hashmap_str_lit("="), (uintptr_t) "-...-");
+
+    // [Morse to English]
+
+    // Letters
     hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-"), (uintptr_t) "A");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("-..."), (uintptr_t) "B");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.-."), (uintptr_t) "C");
@@ -431,6 +441,7 @@ void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.--"), (uintptr_t) "Y");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("--.."), (uintptr_t) "Z");
 
+    // Digits
     hashmap_set(morse_to_eng_dict, hashmap_str_lit(".----"), (uintptr_t) "1");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("..---"), (uintptr_t) "2");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("...--"), (uintptr_t) "3");
@@ -441,9 +452,21 @@ void fill_dicts(hashmap *eng_to_morse_dict, hashmap *morse_to_eng_dict)
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("---.."), (uintptr_t) "8");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("----."), (uintptr_t) "9");
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("-----"), (uintptr_t) "0");
-    
-    // Special symbol for space
+
+    // Punctuation
     hashmap_set(morse_to_eng_dict, hashmap_str_lit("/"), (uintptr_t) " ");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-.-.-"), (uintptr_t) ".");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".----."), (uintptr_t) "'");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.--."), (uintptr_t) "(");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.--.-"), (uintptr_t) ")");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("---..."), (uintptr_t) ":");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit(".-.-."), (uintptr_t) "+");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("--..--"), (uintptr_t) ",");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.-.--"), (uintptr_t) "!");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-.-.-."), (uintptr_t) ";");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-....-"), (uintptr_t) "-");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("..--.."), (uintptr_t) "?");
+    hashmap_set(morse_to_eng_dict, hashmap_str_lit("-...-"), (uintptr_t) "=");
 }
 
 void free_dicts(hashmap *morse_to_eng_dict, hashmap *eng_to_morse_dict)
@@ -462,8 +485,9 @@ void remove_remaining_chars(FILE *f)
 {
     int c;
     // Read characters from input and do nothing
-    while ((c = fgetc(f)) != EOF && c!= '\n')
-    { }
+    while ((c = fgetc(f)) != EOF && c != '\n')
+    {
+    }
 }
 
 int truncate_newline(char *str)
@@ -479,7 +503,6 @@ int truncate_newline(char *str)
         }
     }
     return res;
-    
 }
 
 void clean_string(char *str, FILE *f)
@@ -487,5 +510,18 @@ void clean_string(char *str, FILE *f)
     if (!truncate_newline(str))
     {
         remove_remaining_chars(f);
-    } 
+    }
+}
+
+void print_symbol(void *key, size_t ksize, uintptr_t value, void *user)
+{
+   printf("%s", (char *)key);
+}
+
+void show_dict(hashmap *eng_to_morse_dict)
+{
+    puts("Allowed English symbols are:"); 
+    hashmap_iterate(eng_to_morse_dict, print_symbol, NULL);
+    puts("");
+
 }
