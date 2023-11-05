@@ -172,30 +172,43 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
         char name[MAX_NAME];
         double amount;
         /* Copy all workers before the current one */
-        for (int i = 0; i < prev_acc_count; acc_num++)
+        for (int i = 0; i < prev_acc_count; i++)
         {
             fscanf(file, "%d%s%lf", &acc_num, name, &amount);
 
             /* If worker was in previous version of new main file - leave his old amount */
             if (acc_num < workers_num)
             {
-                fprintf(new_main_ptr, "%d %s %lf\n", acc_num, name, old_amounts[i]);
+                // TODO \n here creates a new line which counts as a worker, fix it somehow
+                fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, old_amounts[i]);
+                // TODO old amount contains trash instead of number
+                puts("AAA");
             }
             else
             {
-                fprintf(new_main_ptr, "%d %s %lf\n", acc_num, name, amount);
+                fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
+                puts("BBB");
             }
         }
 
         /* Copy the current worker with updated amount */
         fscanf(file, "%d%s%lf", &acc_num, name, &amount);
-        fprintf(new_main_ptr, "%d %s %lf\n", acc_num, name, amount + *temp_amount);
+        fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount + *temp_amount);
+        puts("CCC");
 
         /* Copy the rest of the workers */
-        while (!feof(file))
+        while (true)
         {
             fscanf(file, "%d%s%lf", &acc_num, name, &amount);
-            fprintf(new_main_ptr, "%d %s %lf\n", acc_num, name, amount);
+            if (!feof(file))
+            {
+                fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
+            puts("DDD");
+            }
+            else
+            {
+                break;
+            }
         }
     }
 
