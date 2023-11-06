@@ -25,12 +25,8 @@
 
 /**
  * TODO
- * 1. When there is worker in main file but no worker in temp file - just copy
- *    worker to the next version of main file
- * 2. Pass to `update_main()` by value?
- * 3. Use consts for parameters
- * 4. Remove debug puts
- * 5. Chech that negative amount from temp file is less than amount in main file
+ * 1. Remove debug puts
+ * 2. Update new main file instead of main (if exists)
  *
  */
 
@@ -105,7 +101,7 @@ int count_workers(void)
  * @old_amounts Array of amounts to fill
  * @workers_num Number of workers in file
 */
-void remember_workers(double old_amounts[], int workers_num)
+void remember_workers(double old_amounts[], const int workers_num)
 {
     FILE *file;
     if ((file = fopen(new_main_file, "r")) == NULL)
@@ -145,14 +141,14 @@ void read_from_temp(FILE *file, int *acc_num, double *amount)
  * Update one worker's data in main file and copy the whole
  * file into another file
  * @file Pointer to the start of current (old) main file;
- * @temp_acc_num Number of worker's account from temp file
  * @temp_amount Worker's amount from temp file
  * @prev_acc_count Account number of the previous worker in main file
  */
-void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int prev_acc_count)
+void update_and_copy(FILE *file, const double *temp_amount, const int prev_acc_count)
 {
     FILE *new_main_ptr;
 
+    puts("CALL TO UPDATE AND COPY");
 
     /**
      * Remember workers that are already in new main file
@@ -203,31 +199,30 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
 
         /* Copy the current worker with updated amount */
         fscanf(file, "%d%s%lf", &acc_num, name, &amount);
+        double new_amount = amount + *temp_amount;
+        if (new_amount < 0)
+        {
+            puts("Resulting amount cannot be negative");
+            exit(EXIT_FAILURE);
+        }
         if (prev_acc_count == 0)
         {
             /* Do not print new line before first worker*/
-            fprintf(new_main_ptr, "%d %s %lf", acc_num, name, amount + *temp_amount);
+            fprintf(new_main_ptr, "%d %s %lf", acc_num, name, new_amount);
             puts("DDD");
         }
         else 
         {
-            fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount + *temp_amount);
+            fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, new_amount);
             puts("EEE");
         }
 
         /* Copy the rest of the workers */
-        while (true)
+        while (!feof(file))
         {
             fscanf(file, "%d%s%lf", &acc_num, name, &amount);
-            if (!feof(file))
-            {
-                fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
-                puts("FFF");
-            }
-            else
-            {
-                break;
-            }
+            fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
+            puts("FFF");
         }
     }
 
@@ -242,9 +237,6 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
  */
 void update_main(FILE *file, int *temp_acc_num, double *temp_amount)
 {
-    int acc_num;
-    char name[MAX_NAME];
-    double amount;
     
     rewind(file);
 
@@ -257,12 +249,16 @@ void update_main(FILE *file, int *temp_acc_num, double *temp_amount)
     /* Search for a worker */
     while (!feof(file))
     {
+        int acc_num;
+        char name[MAX_NAME];
+        double amount;
+
         fscanf(file, "%d%s%lf", &acc_num, name, &amount);
         if (*temp_acc_num == acc_num)
         {
             /* Current worker from temp file is found in main file */
             found = true;
-            update_and_copy(file, temp_acc_num, temp_amount, prev_acc_count);
+            update_and_copy(file, temp_amount, prev_acc_count);
         }
         else
         {
@@ -280,8 +276,6 @@ void update_main(FILE *file, int *temp_acc_num, double *temp_amount)
 int main(void)
 {
 
-    int acc_num;
-    double amount;
 
     FILE *temp_ptr, *main_ptr;
     if ((temp_ptr = fopen(temp_file, "r")) == NULL)
@@ -305,6 +299,9 @@ int main(void)
             /* Ok to operate both files */
             while (!feof(temp_ptr))
             {
+                int acc_num;
+                double amount;
+
                 read_from_temp(temp_ptr, &acc_num, &amount);
                 update_main(main_ptr, &acc_num, &amount);
             }
