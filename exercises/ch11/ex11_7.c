@@ -17,9 +17,10 @@
  *   Main file cannot be empty
  *
  *   The program should read from temp file and update main file.
- *   There should be 2 versions of the main file. The one that does not contain
- *   data from temp file and the one that does.
- *
+ *   There should be 2 versions of the main file. The original one
+ *   and the one with all changes from temp file applied.
+ *   If there is already a new version of main file, it should be updated next.
+ *  
  */
 
 /**
@@ -28,6 +29,8 @@
  *    worker to the next version of main file
  * 2. Pass to `update_main()` by value?
  * 3. Use consts for parameters
+ * 4. Remove debug puts
+ * 5. Chech that negative amount from temp file is less than amount in main file
  *
  */
 
@@ -102,7 +105,7 @@ int count_workers(void)
  * @old_amounts Array of amounts to fill
  * @workers_num Number of workers in file
 */
-void remember_workers(int old_amounts[], int workers_num)
+void remember_workers(double old_amounts[], int workers_num)
 {
     FILE *file;
     if ((file = fopen(new_main_file, "r")) == NULL)
@@ -177,24 +180,40 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
             fscanf(file, "%d%s%lf", &acc_num, name, &amount);
 
             /* If worker was in previous version of new main file - leave his old amount */
-            if (acc_num < workers_num)
+            if (acc_num <= workers_num)
             {
-                // TODO \n here creates a new line which counts as a worker, fix it somehow
-                fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, old_amounts[i]);
-                // TODO old amount contains trash instead of number
-                puts("AAA");
+                if (i == 0)
+                {
+                    /* Do not print new line before first worker */
+                    fprintf(new_main_ptr, "%d %s %lf", acc_num, name, old_amounts[i]);
+                    puts("AAA");
+                }
+                else
+                {
+                    fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, old_amounts[i]);
+                    puts("BBB");
+                }
             }
             else
             {
                 fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
-                puts("BBB");
+                puts("CCC");
             }
         }
 
         /* Copy the current worker with updated amount */
         fscanf(file, "%d%s%lf", &acc_num, name, &amount);
-        fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount + *temp_amount);
-        puts("CCC");
+        if (prev_acc_count == 0)
+        {
+            /* Do not print new line before first worker*/
+            fprintf(new_main_ptr, "%d %s %lf", acc_num, name, amount + *temp_amount);
+            puts("DDD");
+        }
+        else 
+        {
+            fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount + *temp_amount);
+            puts("EEE");
+        }
 
         /* Copy the rest of the workers */
         while (true)
@@ -203,7 +222,7 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
             if (!feof(file))
             {
                 fprintf(new_main_ptr, "\n%d %s %lf", acc_num, name, amount);
-            puts("DDD");
+                puts("FFF");
             }
             else
             {
@@ -211,8 +230,6 @@ void update_and_copy(FILE *file, int *temp_acc_num, double *temp_amount, int pre
             }
         }
     }
-
-    /* Now `file` points to the end of main file */
 
     fclose(new_main_ptr);
 }
@@ -296,6 +313,6 @@ int main(void)
 
     fclose(temp_ptr);
     fclose(main_ptr);
-
     return 0;
+    
 }
