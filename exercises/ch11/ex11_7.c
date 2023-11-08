@@ -23,14 +23,6 @@
  *
  */
 
-/**
- * TODO
- * 1. Remove debug puts
- * 2. Update new main file instead of main (if exists)
- * 3. Test with float amounts
- *
- */
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,8 +44,9 @@
 #define MAX_NAME 100
 
 /**
- * Checks if file is empty
- * @file Pointer to the start of file
+ * @note Checks if file is empty
+ * @param file File to check
+ * @return True if file is empty. Otherwise - false
  */
 bool check_empty(FILE *file)
 {
@@ -70,10 +63,9 @@ bool check_empty(FILE *file)
 }
 
 /**
- * Choose whether to use an original main file (first run)
- * or a new main file from previous run
- * Returns 0 if use original main file
- * Returns 1 if use new main file
+ * @note Choose whether to use an original main file (first run)
+ *       or a new main file from previous run
+ * @return 0 if use original main file, 1 if use new main file
  */
 unsigned choose_main_file(void)
 {
@@ -84,7 +76,6 @@ unsigned choose_main_file(void)
         if (!check_empty(file))
         {
             fclose(file);
-            puts("USING NEW MAIN");
             return USE_NEW_MAIN;
         }
     }
@@ -96,15 +87,14 @@ unsigned choose_main_file(void)
     else
     {
         fclose(file);
-        puts("USING ORIG MAIN");
         return USE_ORIG_MAIN;
     }
 }
 
-
 /**
- * Counts workers in new main file
- * @chosen_file Old main or new main file to use
+ * @note Counts workers in the updated file
+ * @param chosen_file 0 if using old main file, 1 if using new main file
+ * @return The number of workers in the file
  */
 int count_workers(const unsigned chosen_file)
 {
@@ -113,12 +103,12 @@ int count_workers(const unsigned chosen_file)
     FILE *file;
     switch (chosen_file)
     {
-        case USE_ORIG_MAIN:
-            file = fopen(main_file, "r");
-            break;
-        case USE_NEW_MAIN:
-            file = fopen(new_main_file, "r");
-            break;
+    case USE_ORIG_MAIN:
+        file = fopen(main_file, "r");
+        break;
+    case USE_NEW_MAIN:
+        file = fopen(new_main_file, "r");
+        break;
     }
     if (file == NULL)
     {
@@ -127,14 +117,12 @@ int count_workers(const unsigned chosen_file)
     }
     else
     {
-        /* Check if empty */
-        int trash;
-        fscanf(file, "%d", &trash);
-        if (feof(file))
+        if (check_empty(file))
         {
             fclose(file);
             return 0;
         }
+
         rewind(file);
 
         int acc_num;
@@ -142,7 +130,7 @@ int count_workers(const unsigned chosen_file)
         double amount;
         while (!feof(file))
         {
-            fscanf(file, "%d%s%lf", &acc_num, name, &amount);
+            fscanf(file, "%d%99s%lf", &acc_num, name, &amount);
             count++;
         }
     }
@@ -151,9 +139,9 @@ int count_workers(const unsigned chosen_file)
 }
 
 /**
- * Remember amount each of workers has in new main file
- * @old_amounts Array of amounts to fill
- * @workers_num Number of workers in file
+ * @note Remember amount each of workers has in new main file
+ * @param old_amounts Array of amounts to fill
+ * @param workers_num Number of workers in file
  */
 void remember_workers(double old_amounts[], const int workers_num)
 {
@@ -171,7 +159,7 @@ void remember_workers(double old_amounts[], const int workers_num)
         /* Remember amounts workers have */
         for (int i = 0; i < workers_num; i++)
         {
-            fscanf(file, "%d%s%lf", &acc_num, name, &amount);
+            fscanf(file, "%d%99s%lf", &acc_num, name, &amount);
             old_amounts[i] = amount;
         }
     }
@@ -179,30 +167,29 @@ void remember_workers(double old_amounts[], const int workers_num)
 }
 
 /**
- * Read worker's data from temp file
- * @file Pointer to the start of temp file;
- * @acc_num Number of worker's account to read
- * @name Worker's name to read
- * @amount Worker's amount (income or order)
+ * @note Read worker's data from temp file
+ * @param file File to read from
+ * @param acc_num Number of worker's account
+ * @param name Worker's name
+ * @param amount Worker's amount (income or order)
  */
 void read_from_temp(FILE *file, int *acc_num, double *amount)
 {
     char trash[MAX_NAME];
-    fscanf(file, "%d%s%lf", acc_num, trash, amount);
+    fscanf(file, "%d%99s%lf", acc_num, trash, amount);
 }
 
 /**
- * Update one worker's data in main file and copy the whole
+ * @note Update one worker's data in main file and copy the whole
  * file into another file
- * @from Main file to read from
- * @temp_amount Worker's amount from temp file
- * @prev_acc_count Account number of the previous worker in main file
- * @chosen_file Old main or new main file to use
+ * @param from File to read from
+ * @param temp_amount Worker's amount from temp file
+ * @param prev_acc_count Account number of the previous worker in main file
+ * @param chosen_file Old main or new main file to use
  */
 void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_count, const unsigned chosen_file)
 {
 
-    puts("");
     /**
      * Remember workers that are already in new main file
      * To not overwrite them again
@@ -216,12 +203,12 @@ void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_c
     FILE *to;
     switch (chosen_file)
     {
-        case USE_ORIG_MAIN:
-            to = fopen(new_main_file, "w");
-            break;
-        case USE_NEW_MAIN:
-            to = fopen(buf_file, "w");
-            break;
+    case USE_ORIG_MAIN:
+        to = fopen(new_main_file, "w");
+        break;
+    case USE_NEW_MAIN:
+        to = fopen(buf_file, "w");
+        break;
     }
     if (to == NULL)
     {
@@ -238,7 +225,7 @@ void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_c
         /* Copy all workers before the current one */
         for (int i = 0; i < prev_acc_count; i++)
         {
-            fscanf(from, "%d%s%lf", &acc_num, name, &amount);
+            fscanf(from, "%d%99s%lf", &acc_num, name, &amount);
 
             /* If worker was in previous version of new main file - leave his old amount */
             if (acc_num <= workers_num)
@@ -246,25 +233,21 @@ void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_c
                 if (i == 0)
                 {
                     /* Do not print new line before first worker */
-                    // TODO bug here, on 2nd run old_amounts[0] = 777 instead of 1000
                     fprintf(to, "%d %s %lf", acc_num, name, old_amounts[i]);
-                    puts("AAA");
                 }
                 else
                 {
                     fprintf(to, "\n%d %s %lf", acc_num, name, old_amounts[i]);
-                    puts("BBB");
                 }
             }
             else
             {
                 fprintf(to, "\n%d %s %lf", acc_num, name, amount);
-                puts("CCC");
             }
         }
 
         /* Copy the current worker with updated amount */
-        fscanf(from, "%d%s%lf", &acc_num, name, &amount);
+        fscanf(from, "%d%99s%lf", &acc_num, name, &amount);
         double new_amount = amount + *temp_amount;
         if (new_amount < 0)
         {
@@ -279,22 +262,18 @@ void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_c
         {
             /* Do not print new line before first worker */
             fprintf(to, "%d %s %lf", acc_num, name, new_amount);
-            puts("DDD");
         }
         else
         {
             fprintf(to, "\n%d %s %lf", acc_num, name, new_amount);
-            puts("EEE");
         }
 
         /* Copy the rest of the workers */
         while (!feof(from))
         {
-            fscanf(from, "%d%s%lf", &acc_num, name, &amount);
+            fscanf(from, "%d%99s%lf", &acc_num, name, &amount);
             fprintf(to, "\n%d %s %lf", acc_num, name, amount);
-            puts("FFF");
         }
-        
 
         /* If buf was used - rename it to new main and delete previous new main */
         if (chosen_file == USE_NEW_MAIN)
@@ -309,10 +288,10 @@ void update_and_copy(FILE *from, const double *temp_amount, const int prev_acc_c
 }
 
 /**
- * Update worker's data in main file
- * @temp_acc_num Number of worker's account from temp file
- * @temp_amount Worker's amount from temp file
- * @chosen_file Old main or new main file to use
+ * @note Update worker's data in main file
+ * @param temp_acc_num Number of worker's account from temp file
+ * @param temp_amount Worker's amount from temp file
+ * @param chosen_file Old main or new main file to use
  */
 void update_main(const int *temp_acc_num, const double *temp_amount, const unsigned chosen_file)
 {
@@ -320,12 +299,12 @@ void update_main(const int *temp_acc_num, const double *temp_amount, const unsig
     FILE *from;
     switch (chosen_file)
     {
-        case USE_ORIG_MAIN:
-            from = fopen(main_file, "r");
-            break;
-        case USE_NEW_MAIN:
-            from = fopen(new_main_file, "r");
-            break;
+    case USE_ORIG_MAIN:
+        from = fopen(main_file, "r");
+        break;
+    case USE_NEW_MAIN:
+        from = fopen(new_main_file, "r");
+        break;
     }
     if (from == NULL)
     {
@@ -354,7 +333,7 @@ void update_main(const int *temp_acc_num, const double *temp_amount, const unsig
         char name[MAX_NAME];
         double amount;
 
-        fscanf(from, "%d%s%lf", &acc_num, name, &amount);
+        fscanf(from, "%d%99s%lf", &acc_num, name, &amount);
         if (*temp_acc_num == acc_num)
         {
             /* Current worker from temp file is found in main file */
@@ -382,8 +361,6 @@ int main(void)
 
     FILE *temp_ptr;
 
-    unsigned chosen_file = choose_main_file();
-
     if ((temp_ptr = fopen(temp_file, "r")) == NULL)
     {
         printf("[ERROR] Cannot read '%s' file!\n", temp_file);
@@ -404,6 +381,9 @@ int main(void)
             int acc_num;
             double amount;
 
+            unsigned chosen_file = choose_main_file();
+
+            /* Read from temp file and update old main or new main file */
             read_from_temp(temp_ptr, &acc_num, &amount);
             update_main(&acc_num, &amount, chosen_file);
         }
