@@ -20,6 +20,9 @@
  *   There should be 2 versions of the main file. The original one
  *   and the one with all changes from temp file applied.
  *   If there is already a new version of main file, it should be updated next.
+ *   
+ *   Temp file may contain several records of one worker if this worker had 
+ *   several payments.
  *
  */
 
