@@ -37,45 +37,73 @@ void get_user_num(char *num)
 
 void find_words(int pos, char *num, char *digits, char *letters[])
 {
-    // TODO should be 2187 at the end
-    static int count = 0;
-    static int last_letter = 0;
-    // printf("\n\nPOS IS: %d\n", pos);
-    // printf("AT POS: %c\n", num[pos]);
-    // printf("COUNT IS: %d\n", count);
+}
 
-    /* Find the digit in the map */
-    for (int i = 0; i < NUM_LENGTH - 1; i++)
+#define SIZE 3
+#define START_LINE 0
+
+// TODO make it not square
+void test()
+{
+    int matrix[3][3] = {
+        {0, 1, 2}, 
+        {3, 4, 5}, 
+        {6, 7, 8}
+    };
+
+    puts("START");
+    int count = 0;
+
+    /* 
+        Iterate over the first line of matrix. Look for all possible 
+        combinations from other lines for each number of the first line.
+    */
+    for (int i = START_LINE; i < SIZE; i++)
     {
-        if (digits[i] == num[pos])
+        int check = 1;
+        int pos_in_line = 0;
+        int pos_in_last_line = 0;
+        while (check == 1)
         {
-            /* Print letters of the digit */
-            for (int j = 0; j < LETTERS_PER_DIGIT - 1; j++)
+            printf("%d", matrix[0][i]);
+            /* Iterate over other lines */
+            for (int j = START_LINE + 1; j < SIZE; j++)
             {
-                if (pos < NUM_LENGTH - 2)
+                /* Last line */
+                if (j == SIZE - 1)
                 {
-                    /* Print all letters except the last. One by one. */
-                    printf("%c", letters[i][j]);
+                    printf("%d", matrix[j][pos_in_last_line]);
                     count++;
-                    find_words(pos + 1, num, digits, letters);
+                    pos_in_last_line++;
+                    /* Reached the end of last line */
+                    if (pos_in_last_line > SIZE - 1)
+                    {
+                        /* The next time the last line will be printed from the beginning */
+                        pos_in_last_line = 0;
+                        /* Switch to next number in the not last line */
+                        pos_in_line++;
+                        /* Reached the end of not last line*/
+                        if (pos_in_line > SIZE - 1)
+                        {
+                            /* The next time the not last line will be printed from the beginning */
+                            pos_in_line = 0;
+                            /* All combinations for the number from the first line were found */
+                            check = 0;
+                        }
+                    }
                 }
+                /* Not last line */
                 else
                 {
-                    /* Print all 3 possible last letters without changing previous letters */
-                    printf("%c", letters[i][last_letter]);
-                    puts("");
-                    last_letter++;
-                    if (last_letter > LETTERS_PER_DIGIT - 1)
-                    {
-                        last_letter = 0;
-                    }
-                    count++;
-                    find_words(0, num, digits, letters);
+                    printf("%d", matrix[j][pos_in_line]);
                 }
             }
-
+            puts("");
         }
+        puts("======");
     }
+
+    printf("Total number: %d\n", count);
 }
 
 int main(void)
@@ -83,8 +111,9 @@ int main(void)
 
     char num[NUM_LENGTH];
 
-    get_user_num(num);
-    find_words(0, num, digits, letters);
+    // get_user_num(num);
+    // find_words(0, num, digits, letters);
+    test();
 
     return 0;
 }
