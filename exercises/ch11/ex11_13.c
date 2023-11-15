@@ -39,69 +39,141 @@ void find_words(int pos, char *num, char *digits, char *letters[])
 {
 }
 
-#define SIZE 3
+#define COLS 3
+#define LINES 4
 #define START_LINE 0
 
-// TODO make it not square
 void test()
 {
-    int matrix[3][3] = {
+    int matrix[LINES][COLS] = {
         {0, 1, 2}, 
         {3, 4, 5}, 
-        {6, 7, 8}
+        {6, 7, 8},
+        {9, 10, 11}
     };
+    
+
+    
+    int pos_in_lines[LINES] = {0};
 
     puts("START");
     int count = 0;
+    
+    int proc_line = LINES - 1;
+    while (pos_in_lines[START_LINE] < LINES)
+    {
+        /* Check all lines and reset */
+        for (int line = 0; line < LINES; line++)
+        {
+            if (pos_in_lines[line] > COLS - 1 && line > 0)
+            {
+                /* If end of current line is reached move to next num in previous line */
+                if (line - 1 != proc_line)
+                {
+                    pos_in_lines[line - 1]++; // If this goes out of 1st line, WHILE will stop, that's what we want
+                }
+                /* If that was the proc line - move it up */
+                if (line == proc_line)
+                {
+                    --proc_line;
+                }
+                /* Reset positions on current line and all lines after current */
+                for (int i = line; i < LINES; i++)
+                {
+                    pos_in_lines[i] = 0;
+                }
+            }
+        }
+
+        for (int line = 0; line < LINES; line++)
+        {
+            /* Before proc line */
+            if (line < proc_line)
+            {
+                printf("%d", matrix[line][pos_in_lines[line]]);
+            }
+            /* After proc line */
+            if (line > proc_line)
+            {
+                printf("%d", matrix[line][pos_in_lines[line]]);
+                if (line == LINES - 1)
+                {
+                    /* The only line which increases every time is the last one */
+                    pos_in_lines[line]++;
+                }
+                if (proc_line != LINES - 1)
+                {
+
+                    // TODO bug at 04811
+
+                    /* If proc line is not the last one - wait for next line to end and move to next num in proc line */
+                    if (pos_in_lines[proc_line + 1] > COLS - 1)
+                    {
+                        pos_in_lines[proc_line]++;
+                    }
+                }
+            }
+            /* On proc line */
+            if (line == proc_line)
+            {
+                printf("%d", matrix[line][pos_in_lines[line]]);
+                if (line == LINES - 1)
+                {
+                    /* If proc line is the last one - print next number in proc line next time */
+                    pos_in_lines[line]++;
+                }
+            }
+        }
+        puts("");
+        count++;
+    }
 
     /* 
         Iterate over the first line of matrix. Look for all possible 
         combinations from other lines for each number of the first line.
     */
-    for (int i = START_LINE; i < SIZE; i++)
-    {
-        int check = 1;
-        int pos_in_line = 0;
-        int pos_in_last_line = 0;
-        while (check == 1)
-        {
-            printf("%d", matrix[0][i]);
-            /* Iterate over other lines */
-            for (int j = START_LINE + 1; j < SIZE; j++)
-            {
-                /* Last line */
-                if (j == SIZE - 1)
-                {
-                    printf("%d", matrix[j][pos_in_last_line]);
-                    count++;
-                    pos_in_last_line++;
-                    /* Reached the end of last line */
-                    if (pos_in_last_line > SIZE - 1)
-                    {
-                        /* The next time the last line will be printed from the beginning */
-                        pos_in_last_line = 0;
-                        /* Switch to next number in the not last line */
-                        pos_in_line++;
-                        /* Reached the end of not last line*/
-                        if (pos_in_line > SIZE - 1)
-                        {
-                            /* The next time the not last line will be printed from the beginning */
-                            pos_in_line = 0;
-                            /* All combinations for the number from the first line were found */
-                            check = 0;
-                        }
-                    }
-                }
-                /* Not last line */
-                else
-                {
-                    printf("%d", matrix[j][pos_in_line]);
-                }
-            }
-            puts("");
-        }
-        puts("======");
-    }
+    // for (int i = 0; i < COLS; i++)
+    // {
+    //     int check = 1;
+    //     while (check == 1)
+    //     {
+    //         printf("%d", matrix[START_LINE][i]);
+    //         /* Iterate over other lines */
+    //         for (int j = START_LINE + 1; j < LINES; j++)
+    //         {
+    //             /* Last line */
+    //             if (j == LINES - 1)
+    //             {
+    //                 printf("%d", matrix[j][pos_in_lines[LINES - 1]]);
+    //                 count++;
+    //                 pos_in_lines[LINES - 1]++;
+    //                 /* Reached the end of last line */
+    //                 if (pos_in_lines[LINES - 1] > COLS - 1)
+    //                 {
+    //                     /* The next time the last line will be printed from the beginning */
+    //                     pos_in_lines[LINES - 1] = 0;
+    //                     /* Switch to next number in the not last line */
+    //                     pos_in_line++;
+    //                     /* Reached the end of not last line*/
+    //                     if (pos_in_line > COLS - 1)
+    //                     {
+    //                         /* The next time the not last line will be printed from the beginning */
+    //                         pos_in_line = 0;
+    //                         /* All combinations for the number from the first line were found */
+    //                         check = 0;
+    //                     }
+    //                 }
+    //             }
+    //             /* Not last line */
+    //             else
+    //             {
+    //                 printf("%d", matrix[j][pos_in_line]);
+    //             }
+    //         }
+    //         puts("");
+    //     }
+    //     puts("======");
+    // }
 
     printf("Total number: %d\n", count);
 }
@@ -109,7 +181,7 @@ void test()
 int main(void)
 {
 
-    char num[NUM_LENGTH];
+    // char num[NUM_LENGTH];
 
     // get_user_num(num);
     // find_words(0, num, digits, letters);
