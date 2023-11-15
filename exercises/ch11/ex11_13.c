@@ -112,16 +112,6 @@ void test()
                         check_above(line, pos_in_lines);
                     }
                 }
-                if (proc_line != LINES - 1)
-                {
-
-                    /* If proc line is not the last one - wait for next line to end and move to next num in proc line */
-                    if (pos_in_lines[proc_line + 1] > COLS - 1)
-                    {
-                        pos_in_lines[proc_line]++;
-                        check_above(proc_line, pos_in_lines);
-                    }
-                }
             }
             /* On proc line */
             if (line == proc_line)
@@ -138,53 +128,6 @@ void test()
         puts("");
         count++;
     }
-
-    /* 
-        Iterate over the first line of matrix. Look for all possible 
-        combinations from other lines for each number of the first line.
-    */
-    // for (int i = 0; i < COLS; i++)
-    // {
-    //     int check = 1;
-    //     while (check == 1)
-    //     {
-    //         printf("%d", matrix[START_LINE][i]);
-    //         /* Iterate over other lines */
-    //         for (int j = START_LINE + 1; j < LINES; j++)
-    //         {
-    //             /* Last line */
-    //             if (j == LINES - 1)
-    //             {
-    //                 printf("%d", matrix[j][pos_in_lines[LINES - 1]]);
-    //                 count++;
-    //                 pos_in_lines[LINES - 1]++;
-    //                 /* Reached the end of last line */
-    //                 if (pos_in_lines[LINES - 1] > COLS - 1)
-    //                 {
-    //                     /* The next time the last line will be printed from the beginning */
-    //                     pos_in_lines[LINES - 1] = 0;
-    //                     /* Switch to next number in the not last line */
-    //                     pos_in_line++;
-    //                     /* Reached the end of not last line*/
-    //                     if (pos_in_line > COLS - 1)
-    //                     {
-    //                         /* The next time the not last line will be printed from the beginning */
-    //                         pos_in_line = 0;
-    //                         /* All combinations for the number from the first line were found */
-    //                         check = 0;
-    //                     }
-    //                 }
-    //             }
-    //             /* Not last line */
-    //             else
-    //             {
-    //                 printf("%d", matrix[j][pos_in_line]);
-    //             }
-    //         }
-    //         puts("");
-    //     }
-    //     puts("======");
-    // }
 
     printf("Total number: %d\n", count);
 }
