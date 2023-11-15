@@ -71,7 +71,7 @@ void test()
     int count = 0;
     
     int proc_line = LINES - 1;
-    while (pos_in_lines[START_LINE] < LINES)
+    while (pos_in_lines[START_LINE] < COLS)
     {
 
         /* Check all lines and reset */
