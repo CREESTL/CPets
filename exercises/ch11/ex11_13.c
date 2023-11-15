@@ -43,6 +43,17 @@ void find_words(int pos, char *num, char *digits, char *letters[])
 #define LINES 4
 #define START_LINE 0
 
+void check_above(int start, int pos_in_lines[LINES])
+{
+    for (int l = start; l > 0; l--)
+    {
+        if (pos_in_lines[l] > COLS - 1)
+        {
+            pos_in_lines[l - 1]++;
+        }
+    }
+}
+
 void test()
 {
     int matrix[LINES][COLS] = {
@@ -62,16 +73,12 @@ void test()
     int proc_line = LINES - 1;
     while (pos_in_lines[START_LINE] < LINES)
     {
+
         /* Check all lines and reset */
         for (int line = 0; line < LINES; line++)
         {
             if (pos_in_lines[line] > COLS - 1 && line > 0)
             {
-                /* If end of current line is reached move to next num in previous line */
-                if (line - 1 != proc_line)
-                {
-                    pos_in_lines[line - 1]++; // If this goes out of 1st line, WHILE will stop, that's what we want
-                }
                 /* If that was the proc line - move it up */
                 if (line == proc_line)
                 {
@@ -100,16 +107,19 @@ void test()
                 {
                     /* The only line which increases every time is the last one */
                     pos_in_lines[line]++;
+                    if (pos_in_lines[line] > COLS - 1)
+                    {
+                        check_above(line, pos_in_lines);
+                    }
                 }
                 if (proc_line != LINES - 1)
                 {
-
-                    // TODO bug at 04811
 
                     /* If proc line is not the last one - wait for next line to end and move to next num in proc line */
                     if (pos_in_lines[proc_line + 1] > COLS - 1)
                     {
                         pos_in_lines[proc_line]++;
+                        check_above(proc_line, pos_in_lines);
                     }
                 }
             }
@@ -121,6 +131,7 @@ void test()
                 {
                     /* If proc line is the last one - print next number in proc line next time */
                     pos_in_lines[line]++;
+                    check_above(line, pos_in_lines);
                 }
             }
         }
