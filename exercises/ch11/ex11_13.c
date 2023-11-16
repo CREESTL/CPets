@@ -54,6 +54,27 @@ void check_above(int start, int pos_in_lines[LINES])
     }
 }
 
+void check_all_and_reset(int proc_line, int pos_in_lines[LINES])
+{
+    /* Check all lines and reset */
+    for (int line = 0; line < LINES; line++)
+    {
+        if (pos_in_lines[line] > COLS - 1 && line > 0)
+        {
+            /* If that was the proc line - move it up */
+            if (line == proc_line)
+            {
+                --proc_line;
+            }
+            /* Reset positions on current line and all lines after current */
+            for (int i = line; i < LINES; i++)
+            {
+                pos_in_lines[i] = 0;
+            }
+        }
+    }
+}
+
 void test()
 {
     char matrix[LINES][COLS] = {
@@ -72,24 +93,8 @@ void test()
     int proc_line = LINES - 1;
     while (pos_in_lines[START_LINE] < COLS)
     {
-
-        /* Check all lines and reset */
-        for (int line = 0; line < LINES; line++)
-        {
-            if (pos_in_lines[line] > COLS - 1 && line > 0)
-            {
-                /* If that was the proc line - move it up */
-                if (line == proc_line)
-                {
-                    --proc_line;
-                }
-                /* Reset positions on current line and all lines after current */
-                for (int i = line; i < LINES; i++)
-                {
-                    pos_in_lines[i] = 0;
-                }
-            }
-        }
+        
+        check_all_and_reset(proc_line, pos_in_lines);
 
         for (int line = 0; line < LINES; line++)
         {
@@ -101,6 +106,7 @@ void test()
             /* After proc line */
             if (line > proc_line)
             {
+                puts("AAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                 printf("%c", matrix[line][pos_in_lines[line]]);
                 if (line == LINES - 1)
                 {
