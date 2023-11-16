@@ -22,13 +22,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Length of string representation of number. Contains '\n' character. */
 #define NUM_LENGTH 8
+/* Length of string representing a digit */
 #define LETTERS_PER_DIGIT 3
 
 /* Map from digits to letters */
 char digits[NUM_LENGTH] = {'2', '3', '4', '5', '6', '7', '8', '9'};
 char *letters[NUM_LENGTH] = {"ABC", "DEF", "GHI", "JKL", "MNO", "PRS", "TUV", "XYZ"};
-int pos_in_lines[NUM_LENGTH] = {0};
+
+/* Positions of printed letters in matrix */
+int pos_in_lines[NUM_LENGTH - 1] = {0};
 
 void get_user_num(char *num)
 {
@@ -68,9 +72,9 @@ void form_matrix(const char *const num, char const digits[NUM_LENGTH], char *con
 }
 
 /* Move to the next num in upper line if the end of lower line reached */
-void check_above(int pos_in_lines[NUM_LENGTH])
+void check_above(int pos_in_lines[NUM_LENGTH - 1])
 {
-    for (int l = NUM_LENGTH - 1; l > 0; l--)
+    for (int l = NUM_LENGTH - 2; l > 0; l--)
     {
         if (pos_in_lines[l] > LETTERS_PER_DIGIT - 1)
         {
@@ -83,11 +87,11 @@ void check_above(int pos_in_lines[NUM_LENGTH])
     If the end of any line is reached, reset position in that line
     and all lines after that
 */
-void check_all_and_reset(int pos_in_lines[NUM_LENGTH])
+void check_all_and_reset(int pos_in_lines[NUM_LENGTH - 1])
 {
     int start = 0;
     int change = 0;
-    for (int line = 0; line < NUM_LENGTH; line++)
+    for (int line = 0; line < NUM_LENGTH - 1; line++)
     {
         if (pos_in_lines[line] > LETTERS_PER_DIGIT - 1 && line > 0)
         {
@@ -109,6 +113,17 @@ void find_words(char matrix[NUM_LENGTH][LETTERS_PER_DIGIT])
     int count = 0;
     while (1)
     {
+        /**
+         * 
+         * DEF
+         * DEF
+         * DEF
+         * GHI
+         * GHI
+         * GHI
+         * ABC 
+         * 
+        */
 
         check_above(pos_in_lines);
         check_all_and_reset(pos_in_lines);
@@ -117,10 +132,10 @@ void find_words(char matrix[NUM_LENGTH][LETTERS_PER_DIGIT])
         if (pos_in_lines[0] > LETTERS_PER_DIGIT - 1)
             break;
 
-        for (int line = 0; line < NUM_LENGTH; line++)
+        for (int line = 0; line < NUM_LENGTH - 1; line++)
         {
             printf("%c ", matrix[line][pos_in_lines[line]]);
-            if (line == LETTERS_PER_DIGIT - 1)
+            if (line == NUM_LENGTH - 2)
             {
                 /* Each run num from last line changes */
                 pos_in_lines[line]++;
@@ -128,6 +143,7 @@ void find_words(char matrix[NUM_LENGTH][LETTERS_PER_DIGIT])
         }
         puts("");
         count++;
+        
     }
 
     printf("Total number: %d\n", count);
