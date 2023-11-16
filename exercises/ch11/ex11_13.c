@@ -37,15 +37,17 @@ void get_user_num(char *num)
 
 void find_words(int pos, char *num, char *digits, char *letters[])
 {
+    
 }
 
 #define COLS 3
 #define LINES 4
 #define START_LINE 0
 
-void check_above(int start, int pos_in_lines[LINES])
+/* Move to the next num in upper line if the end of lower line reached */
+void check_above(int pos_in_lines[LINES])
 {
-    for (int l = start; l > 0; l--)
+    for (int l = LINES - 1; l > 0; l--)
     {
         if (pos_in_lines[l] > COLS - 1)
         {
@@ -54,23 +56,26 @@ void check_above(int start, int pos_in_lines[LINES])
     }
 }
 
-void check_all_and_reset(int proc_line, int pos_in_lines[LINES])
+/* 
+    If the end of any line is reached, reset position in that line
+    and all lines after that
+*/
+void check_all_and_reset(int pos_in_lines[LINES])
 {
-    /* Check all lines and reset */
+    int start = 0;
+    int change = 0;
     for (int line = 0; line < LINES; line++)
     {
         if (pos_in_lines[line] > COLS - 1 && line > 0)
         {
-            /* If that was the proc line - move it up */
-            if (line == proc_line)
-            {
-                --proc_line;
-            }
-            /* Reset positions on current line and all lines after current */
-            for (int i = line; i < LINES; i++)
-            {
-                pos_in_lines[i] = 0;
-            }
+            /* Remember the line and allow to change */
+            start = line;
+            change = 1;
+        }
+        if (change == 1 && line >= start)
+        {
+            /* Reset lines below */
+            pos_in_lines[line] = 0;
         }
     }
 }
@@ -78,53 +83,33 @@ void check_all_and_reset(int proc_line, int pos_in_lines[LINES])
 void test()
 {
     char matrix[LINES][COLS] = {
-        {'A', 'B', 'C'}, 
-        {'D', 'E', 'F'}, 
-        {'G', 'H', 'I'},
-        {'J', 'K', 'L'}
+        {0, 1, 2},
+        {3, 4, 5},
+        {6, 7, 8},
+        {9, 10, 11},
     };
-    
-
     
     int pos_in_lines[LINES] = {0};
 
     int count = 0;
     
-    int proc_line = LINES - 1;
-    while (pos_in_lines[START_LINE] < COLS)
+    while (1)
     {
         
-        check_all_and_reset(proc_line, pos_in_lines);
+        check_above(pos_in_lines);
+        check_all_and_reset(pos_in_lines);
+        
+        /* Stop if the end of first line reached */
+        if (pos_in_lines[0] > COLS - 1)
+            break;
 
         for (int line = 0; line < LINES; line++)
         {
-            /* Before proc line */
-            if (line < proc_line)
+            printf("%d", matrix[line][pos_in_lines[line]]);
+            if (line == LINES - 1)
             {
-                printf("%c", matrix[line][pos_in_lines[line]]);
-            }
-            /* After proc line */
-            if (line > proc_line)
-            {
-                puts("AAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-                printf("%c", matrix[line][pos_in_lines[line]]);
-                if (line == LINES - 1)
-                {
-                    /* The only line which increases every time is the last one */
-                    pos_in_lines[line]++;
-                    check_above(line, pos_in_lines);
-                }
-            }
-            /* On proc line */
-            if (line == proc_line)
-            {
-                printf("%c", matrix[line][pos_in_lines[line]]);
-                if (line == LINES - 1)
-                {
-                    /* If proc line is the last one - print next number in proc line next time */
-                    pos_in_lines[line]++;
-                    check_above(line, pos_in_lines);
-                }
+                /* Each run num from last line changes */
+                pos_in_lines[line]++;
             }
         }
         puts("");
