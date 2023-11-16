@@ -56,18 +56,17 @@ void check_above(int start, int pos_in_lines[LINES])
 
 void test()
 {
-    int matrix[LINES][COLS] = {
-        {0, 1, 2}, 
-        {3, 4, 5}, 
-        {6, 7, 8},
-        {9, 10, 11}
+    char matrix[LINES][COLS] = {
+        {'A', 'B', 'C'}, 
+        {'D', 'E', 'F'}, 
+        {'G', 'H', 'I'},
+        {'J', 'K', 'L'}
     };
     
 
     
     int pos_in_lines[LINES] = {0};
 
-    puts("START");
     int count = 0;
     
     int proc_line = LINES - 1;
@@ -97,26 +96,23 @@ void test()
             /* Before proc line */
             if (line < proc_line)
             {
-                printf("%d", matrix[line][pos_in_lines[line]]);
+                printf("%c", matrix[line][pos_in_lines[line]]);
             }
             /* After proc line */
             if (line > proc_line)
             {
-                printf("%d", matrix[line][pos_in_lines[line]]);
+                printf("%c", matrix[line][pos_in_lines[line]]);
                 if (line == LINES - 1)
                 {
                     /* The only line which increases every time is the last one */
                     pos_in_lines[line]++;
-                    if (pos_in_lines[line] > COLS - 1)
-                    {
-                        check_above(line, pos_in_lines);
-                    }
+                    check_above(line, pos_in_lines);
                 }
             }
             /* On proc line */
             if (line == proc_line)
             {
-                printf("%d", matrix[line][pos_in_lines[line]]);
+                printf("%c", matrix[line][pos_in_lines[line]]);
                 if (line == LINES - 1)
                 {
                     /* If proc line is the last one - print next number in proc line next time */
