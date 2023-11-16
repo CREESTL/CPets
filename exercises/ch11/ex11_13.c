@@ -28,6 +28,7 @@
 /* Map from digits to letters */
 char digits[NUM_LENGTH] = {'2', '3', '4', '5', '6', '7', '8', '9'};
 char *letters[NUM_LENGTH] = {"ABC", "DEF", "GHI", "JKL", "MNO", "PRS", "TUV", "XYZ"};
+int pos_in_lines[NUM_LENGTH] = {0};
 
 void get_user_num(char *num)
 {
@@ -35,38 +36,60 @@ void get_user_num(char *num)
     fgets(num, NUM_LENGTH + 1, stdin);
 }
 
-void find_words(int pos, char *num, char *digits, char *letters[])
+void form_matrix(const char *const num, char const digits[NUM_LENGTH], char *const letters[NUM_LENGTH],
+                 char matrix[NUM_LENGTH][LETTERS_PER_DIGIT])
 {
-    
+    int count = 0;
+    for (int i = 0; i < NUM_LENGTH; i++)
+    {
+        for (int j = 0; j < NUM_LENGTH; j++)
+        {
+            if (num[i] == digits[j])
+            {
+                for (int k = 0; k < LETTERS_PER_DIGIT; k++)
+                {
+                    matrix[count][k] = letters[j][k];
+                }
+                count++;
+            }
+        }
+    }
+
+    puts("MATRIX IS: ");
+    for (int i = 0; i < NUM_LENGTH; i++)
+    {
+        for (int j = 0; j < LETTERS_PER_DIGIT; j++)
+        {
+            printf("%c ", matrix[i][j]);
+        }
+        puts("");
+    }
+    puts("============");
 }
 
-#define COLS 3
-#define LINES 4
-#define START_LINE 0
-
 /* Move to the next num in upper line if the end of lower line reached */
-void check_above(int pos_in_lines[LINES])
+void check_above(int pos_in_lines[NUM_LENGTH])
 {
-    for (int l = LINES - 1; l > 0; l--)
+    for (int l = NUM_LENGTH - 1; l > 0; l--)
     {
-        if (pos_in_lines[l] > COLS - 1)
+        if (pos_in_lines[l] > LETTERS_PER_DIGIT - 1)
         {
             pos_in_lines[l - 1]++;
         }
     }
 }
 
-/* 
+/*
     If the end of any line is reached, reset position in that line
     and all lines after that
 */
-void check_all_and_reset(int pos_in_lines[LINES])
+void check_all_and_reset(int pos_in_lines[NUM_LENGTH])
 {
     int start = 0;
     int change = 0;
-    for (int line = 0; line < LINES; line++)
+    for (int line = 0; line < NUM_LENGTH; line++)
     {
-        if (pos_in_lines[line] > COLS - 1 && line > 0)
+        if (pos_in_lines[line] > LETTERS_PER_DIGIT - 1 && line > 0)
         {
             /* Remember the line and allow to change */
             start = line;
@@ -80,33 +103,24 @@ void check_all_and_reset(int pos_in_lines[LINES])
     }
 }
 
-void test()
+void find_words(char matrix[NUM_LENGTH][LETTERS_PER_DIGIT])
 {
-    char matrix[LINES][COLS] = {
-        {0, 1, 2},
-        {3, 4, 5},
-        {6, 7, 8},
-        {9, 10, 11},
-    };
-    
-    int pos_in_lines[LINES] = {0};
 
     int count = 0;
-    
     while (1)
     {
-        
+
         check_above(pos_in_lines);
         check_all_and_reset(pos_in_lines);
-        
+
         /* Stop if the end of first line reached */
-        if (pos_in_lines[0] > COLS - 1)
+        if (pos_in_lines[0] > LETTERS_PER_DIGIT - 1)
             break;
 
-        for (int line = 0; line < LINES; line++)
+        for (int line = 0; line < NUM_LENGTH; line++)
         {
-            printf("%d", matrix[line][pos_in_lines[line]]);
-            if (line == LINES - 1)
+            printf("%c ", matrix[line][pos_in_lines[line]]);
+            if (line == LETTERS_PER_DIGIT - 1)
             {
                 /* Each run num from last line changes */
                 pos_in_lines[line]++;
@@ -122,11 +136,12 @@ void test()
 int main(void)
 {
 
-    // char num[NUM_LENGTH];
+    char num[NUM_LENGTH];
+    char matrix[NUM_LENGTH][LETTERS_PER_DIGIT];
 
-    // get_user_num(num);
-    // find_words(0, num, digits, letters);
-    test();
+    get_user_num(num);
+    form_matrix(num, digits, letters, matrix);
+    find_words(matrix);
 
     return 0;
 }
