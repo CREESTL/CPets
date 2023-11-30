@@ -50,8 +50,9 @@ void get_user_input(char *infix)
 }
 
 /* Checks if stack is empty */
-bool is_empty(StackNodePtr *stack_top)
+bool is_empty(const StackNodePtr const *stack_top)
 {
+    // TODO top is not NULL after last pop???
     return (*stack_top) == NULL;
 }
 
@@ -119,7 +120,7 @@ bool is_operator(char c)
 {
     for (int i = 0; i < MAX_ALLOWED; i++)
     {
-        if (allowed[i])
+        if (allowed[i] == c)
             return true;
     }
     return false;
@@ -179,15 +180,14 @@ int order(char op1, char op2)
 void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
 {
     
-    /* Add { to the stack */
-    push(&stack, '{');
-    /* Add } to infix */
+    /* Add ( to the stack */
+    push(&stack, '(');
+    /* Add ) to infix */
     for (int i = 0; i < MAX_CHARS; i++)
     {
         if (infix[i] == '\n')
         {
-            puts("FOUND NEWLINE!");
-            infix[i] = '}';
+            infix[i] = ')';
             break;
         }
     }
@@ -230,7 +230,8 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
                 {
                     pop(&stack);
                     break;
-                } else 
+                } 
+                else 
                 {
                     if (is_operator(get_top(&stack)))
                     {
@@ -249,7 +250,7 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
         */
         else if (is_operator(el))
         {
-            while (!is_empty(&stack))
+            while (!is_empty(&stack) && is_operator(get_top(&stack)))
             {
                 if (order(el, get_top(&stack)) == 1)
                 {
@@ -258,7 +259,7 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
                     p_pos++;
                 }
             }
-            infix[in_pos] = el;
+            push(&stack, el);
         }
         /* Increases each run */
         in_pos++;
