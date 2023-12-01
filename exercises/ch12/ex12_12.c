@@ -28,7 +28,6 @@ TODO
 /* Chars below this index have the 1st order */
 #define FO_INDEX 2
 
-// TODO not sure about the order
 char allowed[MAX_ALLOWED] = "^*/%+-";
 
 
@@ -52,18 +51,13 @@ void get_user_input(char *infix)
 /* Checks if stack is empty */
 bool is_empty(const StackNodePtr const *stack_top)
 {
-    // TODO top is not NULL after last pop???
-    return (*stack_top) == NULL;
+    // By default stack has ')' in it
+    return (*stack_top)->data == 0;
 }
 
 /* Pushes one char onto the stack */
 void push(StackNodePtr *stack_top, char value)
 {
-    if (is_empty(stack_top))
-    {
-        puts("Invalid stack pointer!");
-        exit(EXIT_FAILURE);
-    }
     StackNodePtr new_node = malloc(sizeof(StackNode));
     if (new_node != NULL)
     {
@@ -91,11 +85,6 @@ char pop(StackNodePtr *stack_top)
 /* Returns the value at the top of the stack without popping it */
 char get_top(StackNodePtr *stack_top)
 {
-    if (is_empty(stack_top))
-    {
-        puts("Invalid stack pointer!");
-        exit(EXIT_FAILURE);
-    }
     return (*stack_top)->data;
 }
 
@@ -108,12 +97,28 @@ void print_stack(StackNodePtr *stack_top)
         puts("Invalid stack pointer!");
         exit(EXIT_FAILURE);
     }
-    while ((*stack_top)->next_node != NULL)
+    StackNodePtr copy = *stack_top;
+    puts("Stack is (head on left side): ");
+    while (copy->next_node != NULL)
     {
-        printf("%c", (*stack_top)->data);
-        (*stack_top) = (*stack_top)->next_node;
+        printf("%c", copy->data);
+        copy = copy->next_node;
     }
+    puts(" ");
 }
+
+/* Prints the array */
+void print_array(char *arr, int size)
+{
+    for (int i = 0; i < size - 1; i++)
+    {
+        if (arr[i] == '\n')
+            return;
+        printf("%c", arr[i]);
+    }
+    puts("");
+}
+
 
 /* Checks if char is an operator */
 bool is_operator(char c)
@@ -129,6 +134,7 @@ bool is_operator(char c)
 /* Checks which of the operators is more important */
 int order(char op1, char op2)
 {
+    printf("Operator 1: %c\nOperator 2: %c\n", op1, op2);
     if (is_operator(op1) && is_operator(op2))
     {
         int pos1 = -1;
@@ -148,16 +154,17 @@ int order(char op1, char op2)
 
         if (pos1 == pos2)
         {
+            puts("Same order");
             return 0;
         }
         else
         {
             /* Both in first order */
             if (pos1 <= FO_INDEX && pos2 <= FO_INDEX)
-                return -1;
+                return 0;
             /* Both in second order */
-            else if (pos1 >= FO_INDEX && pos2 >= FO_INDEX)
-                return 1;
+            else if (pos1 > FO_INDEX && pos2 > FO_INDEX)
+                return 0;
             /* In different orders */
             else
             {
@@ -179,7 +186,7 @@ int order(char op1, char op2)
 
 void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
 {
-    
+
     /* Add ( to the stack */
     push(&stack, '(');
     /* Add ) to infix */
@@ -188,6 +195,7 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
         if (infix[i] == '\n')
         {
             infix[i] = ')';
+            infix[i + 1] = '\n';
             break;
         }
     }
@@ -205,20 +213,21 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
             in_pos++;
             continue;
         }
-        printf("%c\n", el);
+        print_stack(&stack);
         /* If current char in infix is a digit - copy it to postfix */
         if (isdigit(el))
         {
             postfix[p_pos] = el;
-            p_pos++;
+            postfix[p_pos + 1] = ' ';
+            p_pos += 2;
         }
         /* If current char in infix is ( - put it on stack */
         else if (el == '(')
         {
             push(&stack, el);
         }
-        /* 
-        If current char in infix is ) - pop operations from the stack and 
+        /*
+        If current char in infix is ) - pop operations from the stack and
         place them to postfix until ( shows up on the top of the stack.
         Pop ( from the stack and forget about it.
         */
@@ -230,41 +239,39 @@ void to_postfix(char *const infix, char *const postfix, StackNodePtr stack)
                 {
                     pop(&stack);
                     break;
-                } 
-                else 
+                }
+                else
                 {
                     if (is_operator(get_top(&stack)))
                     {
                         char from_stack = pop(&stack);
                         postfix[p_pos] = from_stack;
-                        p_pos++;
+                        postfix[p_pos + 1] = ' ';
+                        p_pos += 2;
                     }
                 }
             }
         }
-        /* 
-        If current char in infix is operation - pop operations from the 
+        /*
+        If current char in infix is operation - pop operations from the
         stack (if any) if they have greater order than this operation. Place
-        them to postfix after that. 
+        them to postfix after that.
         Place current char in infix on stack
         */
         else if (is_operator(el))
         {
-            while (!is_empty(&stack) && is_operator(get_top(&stack)))
+            while (is_operator(get_top(&stack)) && order(el, get_top(&stack)) == 1)
             {
-                if (order(el, get_top(&stack)) == 1)
-                {
-                    char from_stack = pop(&stack);
-                    postfix[p_pos] = from_stack;
-                    p_pos++;
-                }
+                char from_stack = pop(&stack);
+                postfix[p_pos] = from_stack;
+                postfix[p_pos + 1] = ' ';
+                p_pos += 2;
             }
             push(&stack, el);
         }
         /* Increases each run */
         in_pos++;
     }
-
 }
 
 int main(void)
@@ -282,6 +289,7 @@ int main(void)
 
     get_user_input(infix);
     to_postfix(infix, postfix, stack);
+    print_array(postfix, MAX_CHARS);
 
     return 0;
 }
